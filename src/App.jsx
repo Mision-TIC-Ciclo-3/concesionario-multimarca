@@ -3,9 +3,11 @@ import PublicLayout from 'layouts/PublicLayout';
 import Index from 'pages/Index';
 import Admin from 'pages/admin/index';
 import Vehiculos from 'pages/admin/Vehiculos';
-import Login from 'pages/Login';
+import Login from 'pages/auth/Login';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import 'styles/styles.css';
+import Registro from 'pages/auth/Registro';
+import AuthLayout from 'layouts/AuthLayout';
 
 function App() {
   return (
@@ -23,6 +25,18 @@ function App() {
                 </Route>
               </Switch>
             </PrivateLayout>
+          </Route>
+          <Route path={['/login', '/registro']}>
+            <AuthLayout>
+              <Switch>
+                <Route path='/login'>
+                  <Login />
+                </Route>
+                <Route path='/registro'>
+                  <Registro />
+                </Route>
+              </Switch>
+            </AuthLayout>
           </Route>
           <Route path={['/']}>
             <PublicLayout>
