@@ -1,7 +1,7 @@
 import PrivateLayout from 'layouts/PrivateLayout';
 import PublicLayout from 'layouts/PublicLayout';
 import Index from 'pages/Index';
-import Admin from 'pages/admin/index';
+import Admin from 'pages/admin/Index';
 import Vehiculos from 'pages/admin/Vehiculos';
 import Login from 'pages/auth/Login';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
