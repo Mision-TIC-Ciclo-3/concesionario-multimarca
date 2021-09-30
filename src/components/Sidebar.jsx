@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Sidebar = () => {
   return (
-    <nav className='w-72 border border-gray-300 h-full flex flex-col bg-gray-200 p-4 sidebar'>
+    <nav className='hidden sm:flex sm:w-72 border border-gray-300 h-full flex-col bg-gray-200 p-4 sidebar'>
       <Link to='/admin'>
         <ImagenLogo />
       </Link>
