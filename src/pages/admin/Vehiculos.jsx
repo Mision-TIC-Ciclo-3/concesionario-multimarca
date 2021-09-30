@@ -1,41 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
+import axios from 'axios';
 import 'react-toastify/dist/ReactToastify.css';
-// realizar un formulario que le pida al usuario su edad y muestre un mensaje
-// que diga si el usuario es mayor de edad o no
-
-const vehiculosBackend = [
-  {
-    nombre: 'Corolla',
-    marca: 'Toyota',
-    modelo: 2014,
-  },
-  {
-    nombre: 'Sandero',
-    marca: 'Renault',
-    modelo: 2020,
-  },
-  {
-    nombre: 'Rav4',
-    marca: 'Toyota',
-    modelo: 2021,
-  },
-  {
-    nombre: 'Fiesta',
-    marca: 'Ford',
-    modelo: 2017,
-  },
-  {
-    nombre: 'Mazda 3',
-    marca: 'Mazda',
-    modelo: 2020,
-  },
-  {
-    nombre: 'Chevrolet',
-    marca: 'Onix',
-    modelo: 2020,
-  },
-];
 
 const Vehiculos = () => {
   const [mostrarTabla, setMostrarTabla] = useState(true);
@@ -44,9 +10,23 @@ const Vehiculos = () => {
   const [colorBoton, setColorBoton] = useState('indigo');
 
   useEffect(() => {
+    const obtenerVehiculos = async () => {
+      const options = { method: 'GET', url: 'https://vast-waters-45728.herokuapp.com/vehicle/' };
+      await axios
+        .request(options)
+        .then(function (response) {
+          setVehiculos(response.data);
+        })
+        .catch(function (error) {
+          console.error(error);
+        });
+    };
+
     //obtener lista de vehículos desde el backend
-    setVehiculos(vehiculosBackend);
-  }, []);
+    if (mostrarTabla) {
+      obtenerVehiculos();
+    }
+  }, [mostrarTabla]);
 
   useEffect(() => {
     if (mostrarTabla) {
@@ -105,9 +85,9 @@ const TablaVehiculos = ({ listaVehiculos }) => {
           {listaVehiculos.map((vehiculo) => {
             return (
               <tr>
-                <td>{vehiculo.nombre}</td>
-                <td>{vehiculo.marca}</td>
-                <td>{vehiculo.modelo}</td>
+                <td>{vehiculo.name}</td>
+                <td>{vehiculo.brand}</td>
+                <td>{vehiculo.model}</td>
               </tr>
             );
           })}
@@ -120,21 +100,34 @@ const TablaVehiculos = ({ listaVehiculos }) => {
 const FormularioCreacionVehiculos = ({ setMostrarTabla, listaVehiculos, setVehiculos }) => {
   const form = useRef(null);
 
-  const submitForm = (e) => {
+  const submitForm = async (e) => {
     e.preventDefault();
     const fd = new FormData(form.current);
-    
+
     const nuevoVehiculo = {};
     fd.forEach((value, key) => {
       nuevoVehiculo[key] = value;
     });
 
+    const options = {
+      method: 'POST',
+      url: 'https://vast-waters-45728.herokuapp.com/vehicle/create',
+      headers: { 'Content-Type': 'application/json' },
+      data: { name: nuevoVehiculo.name, brand: nuevoVehiculo.brand, model: nuevoVehiculo.model },
+    };
+
+    await axios
+      .request(options)
+      .then(function (response) {
+        console.log(response.data);
+        toast.success('Vehículo agregado con éxito');
+      })
+      .catch(function (error) {
+        console.error(error);
+        toast.error('Error creando un vehículo');
+      });
+
     setMostrarTabla(true);
-    setVehiculos([...listaVehiculos, nuevoVehiculo]);
-    // identificar el caso de éxito y mostrar un toast de éxito
-    toast.success('Vehículo agregado con éxito');
-    // identificar el caso de error y mostrar un toast de error
-    // toast.error('Error creando un vehículo');
   };
 
   return (
@@ -144,7 +137,7 @@ const FormularioCreacionVehiculos = ({ setMostrarTabla, listaVehiculos, setVehic
         <label className='flex flex-col' htmlFor='nombre'>
           Nombre del vehículo
           <input
-            name='nombre'
+            name='name'
             className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
             type='text'
             placeholder='Corolla'
@@ -155,7 +148,7 @@ const FormularioCreacionVehiculos = ({ setMostrarTabla, listaVehiculos, setVehic
           Marca del vehículo
           <select
             className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
-            name='marca'
+            name='brand'
             required
             defaultValue={0}
           >
@@ -172,7 +165,7 @@ const FormularioCreacionVehiculos = ({ setMostrarTabla, listaVehiculos, setVehic
         <label className='flex flex-col' htmlFor='modelo'>
           Modelo del vehículo
           <input
-            name='modelo'
+            name='model'
             className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
             type='number'
             min={1992}
