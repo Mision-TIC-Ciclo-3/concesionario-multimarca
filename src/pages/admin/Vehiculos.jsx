@@ -3,6 +3,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
 import { nanoid } from 'nanoid';
 import { Dialog, Tooltip } from '@material-ui/core';
+import { obtenerVehiculos } from 'utils/api';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Vehiculos = () => {
@@ -12,23 +13,10 @@ const Vehiculos = () => {
   const [colorBoton, setColorBoton] = useState('indigo');
   const [ejecutarConsulta, setEjecutarConsulta] = useState(true);
 
-  const obtenerVehiculos = async () => {
-    const options = { method: 'GET', url: 'https://vast-waters-45728.herokuapp.com/vehicle/' };
-    await axios
-      .request(options)
-      .then(function (response) {
-        setVehiculos(response.data);
-      })
-      .catch(function (error) {
-        console.error(error);
-      });
-    setEjecutarConsulta(false);
-  };
-
   useEffect(() => {
     console.log('consulta', ejecutarConsulta);
     if (ejecutarConsulta) {
-      obtenerVehiculos();
+      obtenerVehiculos(setVehiculos, setEjecutarConsulta);
     }
   }, [ejecutarConsulta]);
 
@@ -146,7 +134,6 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
   });
 
   const actualizarVehiculo = async () => {
-    console.log(infoNuevoVehiculo);
     //enviar la info al backend
     const options = {
       method: 'PATCH',
