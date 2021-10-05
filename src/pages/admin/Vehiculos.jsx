@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import axios from 'axios';
+import { nanoid } from 'nanoid';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Vehiculos = () => {
@@ -8,23 +9,32 @@ const Vehiculos = () => {
   const [vehiculos, setVehiculos] = useState([]);
   const [textoBoton, setTextoBoton] = useState('Crear Nuevo Vehículo');
   const [colorBoton, setColorBoton] = useState('indigo');
+  const [ejecutarConsulta, setEjecutarConsulta] = useState(true);
+
+  const obtenerVehiculos = async () => {
+    const options = { method: 'GET', url: 'https://vast-waters-45728.herokuapp.com/vehicle/' };
+    await axios
+      .request(options)
+      .then(function (response) {
+        setVehiculos(response.data);
+      })
+      .catch(function (error) {
+        console.error(error);
+      });
+    setEjecutarConsulta(false);
+  };
 
   useEffect(() => {
-    const obtenerVehiculos = async () => {
-      const options = { method: 'GET', url: 'https://vast-waters-45728.herokuapp.com/vehicle/' };
-      await axios
-        .request(options)
-        .then(function (response) {
-          setVehiculos(response.data);
-        })
-        .catch(function (error) {
-          console.error(error);
-        });
-    };
+    console.log('consulta', ejecutarConsulta);
+    if (ejecutarConsulta) {
+      obtenerVehiculos();
+    }
+  }, [ejecutarConsulta]);
 
+  useEffect(() => {
     //obtener lista de vehículos desde el backend
     if (mostrarTabla) {
-      obtenerVehiculos();
+      setEjecutarConsulta(true);
     }
   }, [mostrarTabla]);
 
@@ -39,7 +49,7 @@ const Vehiculos = () => {
   }, [mostrarTabla]);
   return (
     <div className='flex h-full w-full flex-col items-center justify-start p-8'>
-      <div className='flex flex-col'>
+      <div className='flex flex-col w-full'>
         <h2 className='text-3xl font-extrabold text-gray-900'>
           Página de administración de vehículos
         </h2>
@@ -53,7 +63,7 @@ const Vehiculos = () => {
         </button>
       </div>
       {mostrarTabla ? (
-        <TablaVehiculos listaVehiculos={vehiculos} />
+        <TablaVehiculos listaVehiculos={vehiculos} setEjecutarConsulta={setEjecutarConsulta} />
       ) : (
         <FormularioCreacionVehiculos
           setMostrarTabla={setMostrarTabla}
@@ -66,34 +76,152 @@ const Vehiculos = () => {
   );
 };
 
-const TablaVehiculos = ({ listaVehiculos }) => {
+const TablaVehiculos = ({ listaVehiculos, setEjecutarConsulta }) => {
   useEffect(() => {
     console.log('este es el listado de vehiculos en el componente de tabla', listaVehiculos);
   }, [listaVehiculos]);
+
   return (
-    <div className='flex flex-col items-center justify-center'>
+    <div className='flex flex-col items-center justify-center w-full'>
       <h2 className='text-2xl font-extrabold text-gray-800'>Todos los vehículos</h2>
-      <table>
+      <table className='tabla'>
         <thead>
           <tr>
             <th>Nombre del vehículo</th>
             <th>Marca del vehículo</th>
             <th>Modelo del vehículo</th>
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
           {listaVehiculos.map((vehiculo) => {
             return (
-              <tr>
-                <td>{vehiculo.name}</td>
-                <td>{vehiculo.brand}</td>
-                <td>{vehiculo.model}</td>
-              </tr>
+              <FilaVehiculo
+                key={nanoid()}
+                vehiculo={vehiculo}
+                setEjecutarConsulta={setEjecutarConsulta}
+              />
             );
           })}
         </tbody>
       </table>
     </div>
+  );
+};
+
+const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
+  const [edit, setEdit] = useState(false);
+  const [infoNuevoVehiculo, setInfoNuevoVehiculo] = useState({
+    name: vehiculo.name,
+    brand: vehiculo.brand,
+    model: vehiculo.model,
+  });
+
+  const actualizarVehiculo = async () => {
+    console.log(infoNuevoVehiculo);
+    //enviar la info al backend
+    const options = {
+      method: 'PATCH',
+      url: 'https://vast-waters-45728.herokuapp.com/vehicle/update/',
+      headers: { 'Content-Type': 'application/json' },
+      data: { ...infoNuevoVehiculo, id: vehiculo._id },
+    };
+
+    await axios
+      .request(options)
+      .then(function (response) {
+        console.log(response.data);
+        toast.success('Vehículo modificado con éxito');
+        setEdit(false);
+        setEjecutarConsulta(true);
+      })
+      .catch(function (error) {
+        toast.error('Error modificando el vehículo');
+        console.error(error);
+      });
+  };
+
+  const eliminarVehiculo = async () => {
+    const options = {
+      method: 'DELETE',
+      url: 'https://vast-waters-45728.herokuapp.com/vehicle/delete/',
+      headers: { 'Content-Type': 'application/json' },
+      data: { id: vehiculo._id },
+    };
+
+    await axios
+      .request(options)
+      .then(function (response) {
+        console.log(response.data);
+        toast.success('vehículo eliminado con éxito');
+        setEjecutarConsulta(true);
+      })
+      .catch(function (error) {
+        console.error(error);
+        toast.error('Error eliminando el vehículo');
+      });
+  };
+
+  return (
+    <tr>
+      {edit ? (
+        <>
+          <td>
+            <input
+              className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
+              type='text'
+              value={infoNuevoVehiculo.name}
+              onChange={(e) => setInfoNuevoVehiculo({ ...infoNuevoVehiculo, name: e.target.value })}
+            />
+          </td>
+          <td>
+            <input
+              className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
+              type='text'
+              value={infoNuevoVehiculo.brand}
+              onChange={(e) =>
+                setInfoNuevoVehiculo({ ...infoNuevoVehiculo, brand: e.target.value })
+              }
+            />
+          </td>
+          <td>
+            <input
+              className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
+              type='text'
+              value={infoNuevoVehiculo.model}
+              onChange={(e) =>
+                setInfoNuevoVehiculo({ ...infoNuevoVehiculo, model: e.target.value })
+              }
+            />
+          </td>
+        </>
+      ) : (
+        <>
+          <td>{vehiculo.name}</td>
+          <td>{vehiculo.brand}</td>
+          <td>{vehiculo.model}</td>
+        </>
+      )}
+      <td>
+        <div className='flex w-full justify-around'>
+          {edit ? (
+            <i
+              onClick={() => actualizarVehiculo()}
+              className='fas fa-check text-green-700 hover:text-green-500'
+            />
+          ) : (
+            <i
+              onClick={() => setEdit(!edit)}
+              className='fas fa-pencil-alt text-yellow-700 hover:text-yellow-500'
+            />
+          )}
+          <i
+            onClick={() => eliminarVehiculo()}
+            className='fas fa-trash text-red-700 hover:text-red-500'
+          />
+        </div>
+      </td>
+    </tr>
   );
 };
 
