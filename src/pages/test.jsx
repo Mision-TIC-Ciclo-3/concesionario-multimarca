@@ -42,7 +42,7 @@ const Test = () => {
       method: 'POST',
       url: 'http://localhost:5000/ventas/',
       headers: { 'Content-Type': 'application/json' },
-      data: nuevaVenta,
+      data: informacionConsolidada,
     };
 
     await axios
