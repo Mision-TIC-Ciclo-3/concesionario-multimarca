@@ -90,6 +90,7 @@ const TablaVehiculos = ({ listaVehiculos, setEjecutarConsulta }) => {
         <table className='tabla'>
           <thead>
             <tr>
+              <th>Id</th>
               <th>Nombre del vehículo</th>
               <th>Marca del vehículo</th>
               <th>Modelo del vehículo</th>
@@ -128,6 +129,7 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
   const [edit, setEdit] = useState(false);
   const [openDialog, setOpenDialog] = useState(false);
   const [infoNuevoVehiculo, setInfoNuevoVehiculo] = useState({
+    _id: vehiculo._id,
     name: vehiculo.name,
     brand: vehiculo.brand,
     model: vehiculo.model,
@@ -137,9 +139,9 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
     //enviar la info al backend
     const options = {
       method: 'PATCH',
-      url: 'https://vast-waters-45728.herokuapp.com/vehicle/update/',
+      url: `http://localhost:5000/vehiculos/${vehiculo._id}/`,
       headers: { 'Content-Type': 'application/json' },
-      data: { ...infoNuevoVehiculo, id: vehiculo._id },
+      data: { ...infoNuevoVehiculo },
     };
 
     await axios
@@ -159,7 +161,7 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
   const eliminarVehiculo = async () => {
     const options = {
       method: 'DELETE',
-      url: 'https://vast-waters-45728.herokuapp.com/vehicle/delete/',
+      url: 'http://localhost:5000/vehiculos/eliminar/',
       headers: { 'Content-Type': 'application/json' },
       data: { id: vehiculo._id },
     };
@@ -182,6 +184,7 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
     <tr>
       {edit ? (
         <>
+          <td>{infoNuevoVehiculo._id}</td>
           <td>
             <input
               className='bg-gray-50 border border-gray-600 p-2 rounded-lg m-2'
@@ -213,6 +216,7 @@ const FilaVehiculo = ({ vehiculo, setEjecutarConsulta }) => {
         </>
       ) : (
         <>
+          <td>{vehiculo._id.slice(20)}</td>
           <td>{vehiculo.name}</td>
           <td>{vehiculo.brand}</td>
           <td>{vehiculo.model}</td>
@@ -292,7 +296,7 @@ const FormularioCreacionVehiculos = ({ setMostrarTabla, listaVehiculos, setVehic
 
     const options = {
       method: 'POST',
-      url: 'https://vast-waters-45728.herokuapp.com/vehicle/create',
+      url: 'http://localhost:5000/vehiculos/nuevo/',
       headers: { 'Content-Type': 'application/json' },
       data: { name: nuevoVehiculo.name, brand: nuevoVehiculo.brand, model: nuevoVehiculo.model },
     };
