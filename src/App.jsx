@@ -5,7 +5,6 @@ import Index from 'pages/Index';
 import Admin from 'pages/admin/Index';
 import Vehiculos from 'pages/admin/Vehiculos';
 import Login from 'pages/auth/Login';
-import Test from 'pages/test';
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom';
 import 'styles/styles.css';
 import Registro from 'pages/auth/Registro';

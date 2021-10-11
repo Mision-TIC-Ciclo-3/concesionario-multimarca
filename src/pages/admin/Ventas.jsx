@@ -1,5 +1,5 @@
-import { nanoid } from 'nanoid';
 import React, { useState, useEffect, useRef } from 'react';
+import { nanoid } from 'nanoid';
 import { crearVenta } from 'utils/api';
 import { obtenerVehiculos } from 'utils/api';
 import { obtenerUsuarios } from 'utils/api';
@@ -38,17 +38,6 @@ const Ventas = () => {
     fetchVehiculos();
   }, []);
 
-  const agregarNuevoVehiculo = () => {
-    setFilasTabla([...filasTabla, vehiculoSeleccionado]);
-    setVehiculos(vehiculos.filter((el) => el !== vehiculoSeleccionado));
-    setVehiculoSeleccionado('');
-  };
-
-  const deleteFila = (v) => {
-    setFilasTabla(filasTabla.filter((el) => el !== v));
-    setVehiculos([...vehiculos, v]);
-  };
-
   const submitForm = async (e) => {
     e.preventDefault();
     const fd = new FormData(form.current);
@@ -58,25 +47,29 @@ const Ventas = () => {
       formData[key] = value;
     });
 
-    console.log('form data', formData);
+    const listaVehiculos = Object.keys(formData)
+      .map((el) => {
+        if (el.includes('vehiculo')) {
+          return filasTabla.filter((v) => v._id === formData[el])[0];
+        } else return null;
+      })
+      .filter((v) => v);
 
-    // const infoConsolidada = {
-    //   valor: formData.valor,
-    //   vendedor: vendedores.filter((v) => v._id === formData.vendedor)[0],
-    //   vehiculo: vehiculos.filter((v) => v._id === formData.vehiculo)[0],
-    // };
+    const infoConsolidada = {
+      valor: formData.valor,
+      vendedor: vendedores.filter((v) => v._id === formData.vendedor)[0],
+      vehiculos: listaVehiculos,
+    };
 
-    // console.log(infoConsolidada);
-
-    // await crearVenta(
-    //   infoConsolidada,
-    //   (response) => {
-    //     console.log(response);
-    //   },
-    //   (error) => {
-    //     console.error(error);
-    //   }
-    // );
+    await crearVenta(
+      infoConsolidada,
+      (response) => {
+        console.log(response);
+      },
+      (error) => {
+        console.error(error);
+      }
+    );
   };
 
   return (
@@ -100,67 +93,14 @@ const Ventas = () => {
           </select>
         </label>
 
-        <div className='my-4'>
-          <span className='text-2xl font-gray-900'>Vehículos</span>
-          <div className='flex'>
-            <label className='flex flex-col m-2' htmlFor='vehiculo'>
-              <select
-                className='p-2 border border-gray-400 rounded-lg focus:outline-none'
-                value={vehiculoSeleccionado._id ?? ''}
-                onChange={(e) =>
-                  setVehiculoSeleccionado(vehiculos.filter((v) => v._id === e.target.value)[0])
-                }
-                required
-              >
-                <option disabled value=''>
-                  Seleccione un Vehiculo
-                </option>
-                {vehiculos
-                  .filter((el) => !filasTabla.includes(el._id))
-                  .map((el) => {
-                    return (
-                      <option
-                        key={nanoid()}
-                        value={el._id}
-                      >{`${el.brand} ${el.name} ${el.model}`}</option>
-                    );
-                  })}
-              </select>
-            </label>
-            <button
-              type='button'
-              onClick={() => {
-                agregarNuevoVehiculo(vehiculoSeleccionado);
-              }}
-              className='m-2  bg-green-400 p-2 rounded-full shadow-md hover:bg-green-600 text-white'
-            >
-              Agregar Vehículo
-            </button>
-          </div>
-          <table className='tabla'>
-            <thead>
-              <tr>
-                <th>id</th>
-                <th>Nombre</th>
-                <th>Marca</th>
-                <th>Modelo</th>
-                <th>Eliminar</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filasTabla.map((vehiculo, index) => {
-                return (
-                  <FilaVehiculo
-                    key={nanoid()}
-                    nombre={`vehiculo_${index}`}
-                    vehiculoSeleccionado={vehiculo}
-                    deleteFila={deleteFila}
-                  />
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+        <RepetidorTabla
+          vehiculos={vehiculos}
+          vehiculoSeleccionado={vehiculoSeleccionado}
+          setVehiculoSeleccionado={setVehiculoSeleccionado}
+          filasTabla={filasTabla}
+          setFilasTabla={setFilasTabla}
+          setVehiculos={setVehiculos}
+        />
 
         <label className='flex flex-col'>
           <span className='text-2xl font-gray-900'>Valor Total Venta</span>
@@ -182,11 +122,92 @@ const Ventas = () => {
   );
 };
 
+const RepetidorTabla = ({
+  vehiculos,
+  vehiculoSeleccionado,
+  setVehiculoSeleccionado,
+  filasTabla,
+  setFilasTabla,
+  setVehiculos,
+}) => {
+  const agregarNuevoVehiculo = () => {
+    setFilasTabla([...filasTabla, vehiculoSeleccionado]);
+    setVehiculos(vehiculos.filter((el) => el !== vehiculoSeleccionado));
+    setVehiculoSeleccionado('');
+  };
+
+  const deleteFila = (v) => {
+    setFilasTabla(filasTabla.filter((el) => el !== v));
+    setVehiculos([...vehiculos, v]);
+  };
+  return (
+    <div className='my-4'>
+      <span className='text-2xl font-gray-900'>Vehículos</span>
+      <div className='flex'>
+        <label className='flex flex-col m-2' htmlFor='vehiculo'>
+          <select
+            className='p-2 border border-gray-400 rounded-lg focus:outline-none'
+            value={vehiculoSeleccionado._id ?? ''}
+            onChange={(e) =>
+              setVehiculoSeleccionado(vehiculos.filter((v) => v._id === e.target.value)[0])
+            }
+          >
+            <option disabled value=''>
+              Seleccione un Vehiculo
+            </option>
+            {vehiculos
+              .filter((el) => !filasTabla.includes(el._id))
+              .map((el) => {
+                return (
+                  <option
+                    key={nanoid()}
+                    value={el._id}
+                  >{`${el.brand} ${el.name} ${el.model}`}</option>
+                );
+              })}
+          </select>
+        </label>
+        <button
+          type='button'
+          onClick={() => {
+            agregarNuevoVehiculo(vehiculoSeleccionado);
+          }}
+          className='m-2  bg-green-400 p-2 rounded-full shadow-md hover:bg-green-600 text-white'
+        >
+          Agregar Vehículo
+        </button>
+      </div>
+      <table className='tabla'>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Marca</th>
+            <th>Modelo</th>
+            <th>Eliminar</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filasTabla.map((vehiculo, index) => {
+            return (
+              <FilaVehiculo
+                key={nanoid()}
+                nombre={`vehiculo_${index}`}
+                vehiculoSeleccionado={vehiculo}
+                deleteFila={deleteFila}
+              />
+            );
+          })}
+        </tbody>
+      </table>
+    </div>
+  );
+};
+
 const FilaVehiculo = ({ nombre, vehiculoSeleccionado, deleteFila }) => {
   return (
     <tr>
-      <input hidden value={vehiculoSeleccionado._id} name={nombre} />
-      <td>{vehiculoSeleccionado._id ?? ''}</td>
+      <td>{vehiculoSeleccionado._id.slice(20) ?? ''}</td>
       <td>{vehiculoSeleccionado.name ?? ''}</td>
       <td>{vehiculoSeleccionado.brand ?? ''}</td>
       <td>{vehiculoSeleccionado.model ?? ''}</td>
@@ -195,6 +216,9 @@ const FilaVehiculo = ({ nombre, vehiculoSeleccionado, deleteFila }) => {
           onClick={() => deleteFila(vehiculoSeleccionado)}
           className='fas fa-minus cursor-pointer hover:text-red-500'
         />
+      </td>
+      <td className='hidden'>
+        <input hidden defaultValue={vehiculoSeleccionado._id} name={nombre} />
       </td>
     </tr>
   );
