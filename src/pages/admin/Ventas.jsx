@@ -8,7 +8,8 @@ const Ventas = () => {
   const form = useRef(null);
   const [vendedores, setVendedores] = useState([]);
   const [vehiculos, setVehiculos] = useState([]);
-  const [vehiculosSeleccionados, setVehiculosSeleccionados] = useState([]);
+  const [filasTabla, setFilasTabla] = useState([]);
+  const [vehiculoSeleccionado, setVehiculoSeleccionado] = useState([]);
 
   useEffect(() => {
     const fetchVendores = async () => {
@@ -37,12 +38,15 @@ const Ventas = () => {
     fetchVehiculos();
   }, []);
 
-  useEffect(() => {
-    console.log('vehiculos seleccionados', vehiculosSeleccionados);
-  }, [vehiculosSeleccionados]);
-
   const agregarNuevoVehiculo = () => {
-    setVehiculosSeleccionados([...vehiculosSeleccionados, DropDownVehiculos]);
+    setFilasTabla([...filasTabla, vehiculoSeleccionado]);
+    setVehiculos(vehiculos.filter((el) => el !== vehiculoSeleccionado));
+    setVehiculoSeleccionado('');
+  };
+
+  const deleteFila = (v) => {
+    setFilasTabla(filasTabla.filter((el) => el !== v));
+    setVehiculos([...vehiculos, v]);
   };
 
   const submitForm = async (e) => {
@@ -81,7 +85,12 @@ const Ventas = () => {
         <h1 className='text-3xl font-extrabold text-gray-900 my-3'>Crear una nueva venta</h1>
         <label className='flex flex-col' htmlFor='vendedor'>
           <span className='text-2xl font-gray-900'>Vendedor</span>
-          <select name='vendedor' className='p-2' defaultValue='' required>
+          <select
+            name='vendedor'
+            className='mx-2 p-2 border border-gray-400 rounded-lg focus:outline-none'
+            defaultValue=''
+            required
+          >
             <option disabled value=''>
               Seleccione un Vendedor
             </option>
@@ -90,24 +99,68 @@ const Ventas = () => {
             })}
           </select>
         </label>
-        <div className='flex flex-col'>
-          <span>Seleccion de Vehiculos</span>
-          <button
-            type='button'
-            onClick={() => agregarNuevoVehiculo()}
-            className='col-span-2 bg-green-400 p-2 rounded-full shadow-md hover:bg-green-600 text-white'
-          >
-            agregar nuevo vehiculo
-          </button>
-        </div>
 
-        {vehiculosSeleccionados.map((DropDownVehiculo, index) => {
-          return (
-            <div className='flex'>
-              <DropDownVehiculo key={nanoid()} vehiculos={vehiculos} nombre={`vehiculo_${index}`} />
-            </div>
-          );
-        })}
+        <div className='my-4'>
+          <span className='text-2xl font-gray-900'>Vehículos</span>
+          <div className='flex'>
+            <label className='flex flex-col m-2' htmlFor='vehiculo'>
+              <select
+                className='p-2 border border-gray-400 rounded-lg focus:outline-none'
+                value={vehiculoSeleccionado._id ?? ''}
+                onChange={(e) =>
+                  setVehiculoSeleccionado(vehiculos.filter((v) => v._id === e.target.value)[0])
+                }
+                required
+              >
+                <option disabled value=''>
+                  Seleccione un Vehiculo
+                </option>
+                {vehiculos
+                  .filter((el) => !filasTabla.includes(el._id))
+                  .map((el) => {
+                    return (
+                      <option
+                        key={nanoid()}
+                        value={el._id}
+                      >{`${el.brand} ${el.name} ${el.model}`}</option>
+                    );
+                  })}
+              </select>
+            </label>
+            <button
+              type='button'
+              onClick={() => {
+                agregarNuevoVehiculo(vehiculoSeleccionado);
+              }}
+              className='m-2  bg-green-400 p-2 rounded-full shadow-md hover:bg-green-600 text-white'
+            >
+              Agregar Vehículo
+            </button>
+          </div>
+          <table className='tabla'>
+            <thead>
+              <tr>
+                <th>id</th>
+                <th>Nombre</th>
+                <th>Marca</th>
+                <th>Modelo</th>
+                <th>Eliminar</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filasTabla.map((vehiculo, index) => {
+                return (
+                  <FilaVehiculo
+                    key={nanoid()}
+                    nombre={`vehiculo_${index}`}
+                    vehiculoSeleccionado={vehiculo}
+                    deleteFila={deleteFila}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
 
         <label className='flex flex-col'>
           <span className='text-2xl font-gray-900'>Valor Total Venta</span>
@@ -129,21 +182,21 @@ const Ventas = () => {
   );
 };
 
-const DropDownVehiculos = ({ vehiculos, nombre }) => {
+const FilaVehiculo = ({ nombre, vehiculoSeleccionado, deleteFila }) => {
   return (
-    <label className='flex flex-col' htmlFor='vehiculo'>
-      <span className='text-2xl font-gray-900'>Vehiculo</span>
-      <select name={nombre} className='p-2' defaultValue={-1}>
-        <option disabled value={-1}>
-          Seleccione un Vehiculo
-        </option>
-        {vehiculos.map((el) => {
-          return (
-            <option key={nanoid()} value={el._id}>{`${el.name} ${el.brand} ${el.model}`}</option>
-          );
-        })}
-      </select>
-    </label>
+    <tr>
+      <input hidden value={vehiculoSeleccionado._id} name={nombre} />
+      <td>{vehiculoSeleccionado._id ?? ''}</td>
+      <td>{vehiculoSeleccionado.name ?? ''}</td>
+      <td>{vehiculoSeleccionado.brand ?? ''}</td>
+      <td>{vehiculoSeleccionado.model ?? ''}</td>
+      <td>
+        <i
+          onClick={() => deleteFila(vehiculoSeleccionado)}
+          className='fas fa-minus cursor-pointer hover:text-red-500'
+        />
+      </td>
+    </tr>
   );
 };
 
