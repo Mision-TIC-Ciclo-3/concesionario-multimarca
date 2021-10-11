@@ -1,27 +1,60 @@
 import axios from 'axios';
 
-export const obtenerVehiculos = async (setVehiculos, setEjecutarConsulta = () => {}) => {
-  const options = { method: 'GET', url: 'http://localhost:5000/vehiculos/' };
-  await axios
-    .request(options)
-    .then(function (response) {
-      setVehiculos(response.data);
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
-  setEjecutarConsulta(false);
+const executeRequest = async (options, resCallback, errCallback) => {
+  await axios.request(options).then(resCallback).catch(errCallback);
 };
 
-export const obtenerUsuarios = async (setVehiculos, setEjecutarConsulta = () => {}) => {
+// CRUD VEHICULOS
+
+export const crearVehiculos = async (data, resCallback, errCallback) => {
+  const options = {
+    method: 'POST',
+    url: 'http://localhost:5000/vehiculos/nuevo/',
+    headers: { 'Content-Type': 'application/json' },
+    data,
+  };
+  await executeRequest(options, resCallback, errCallback);
+};
+
+export const obtenerVehiculos = async (resCallback, errCallback) => {
+  const options = { method: 'GET', url: 'http://localhost:5000/vehiculos/' };
+  await executeRequest(options, resCallback, errCallback);
+};
+
+export const actualizarVehiculo = async (id, data, resCallback, errCallback) => {
+  const options = {
+    method: 'PATCH',
+    url: `http://localhost:5000/vehiculos/${id}/`,
+    headers: { 'Content-Type': 'application/json' },
+    data,
+  };
+  await executeRequest(options, resCallback, errCallback);
+};
+
+export const eliminarVehiculo = async (id, resCallback, errCallback) => {
+  const options = {
+    method: 'DELETE',
+    url: `http://localhost:5000/vehiculos/${id}/`,
+    headers: { 'Content-Type': 'application/json' },
+  };
+  await executeRequest(options, resCallback, errCallback);
+};
+
+//CRUD USUARIOS
+
+export const obtenerUsuarios = async (resCallback, errCallback) => {
   const options = { method: 'GET', url: 'http://localhost:5000/usuarios/' };
-  await axios
-    .request(options)
-    .then(function (response) {
-      setVehiculos(response.data);
-    })
-    .catch(function (error) {
-      console.error(error);
-    });
-  setEjecutarConsulta(false);
+  await executeRequest(options, resCallback, errCallback);
+};
+
+// CRUD VENTAS
+
+export const crearVenta = async (data, resCallback, errCallback) => {
+  const options = {
+    method: 'POST',
+    url: 'http://localhost:5000/ventas/',
+    headers: { 'Content-Type': 'application/json' },
+    data,
+  };
+  await executeRequest(options, resCallback, errCallback);
 };

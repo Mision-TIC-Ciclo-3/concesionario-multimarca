@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from 'axios';
 import { nanoid } from 'nanoid';
 import { obtenerUsuarios } from 'utils/api';
 import { obtenerVehiculos } from 'utils/api';
+import { crearVenta } from 'utils/api';
 
 const Test = () => {
   const [usuarios, setUsuarios] = useState([]);
@@ -11,7 +11,9 @@ const Test = () => {
 
   useEffect(() => {
     obtenerVehiculos(setVehiculos);
-    obtenerUsuarios(setUsuarios);
+    obtenerUsuarios((res) => {
+      setUsuarios(res.data);
+    });
   }, []);
 
   useEffect(() => {
@@ -37,24 +39,15 @@ const Test = () => {
       vendedor: usuarios.filter((el) => el._id === nuevaVenta.vendedor)[0],
     };
     console.log(informacionConsolidada);
-
-    const options = {
-      method: 'POST',
-      url: 'http://localhost:5000/ventas/',
-      headers: { 'Content-Type': 'application/json' },
-      data: informacionConsolidada,
-    };
-
-    await axios
-      .request(options)
-      .then(function (response) {
-        console.log(response.data);
-        // toast.success('Vehículo agregado con éxito');
-      })
-      .catch(function (error) {
-        console.error(error);
-        // toast.error('Error creando un vehículo');
-      });
+    crearVenta(
+      informacionConsolidada,
+      (response) => {
+        setVehiculos(response.data);
+      },
+      (error) => {
+        console.log(error);
+      }
+    );
   };
 
   return (
