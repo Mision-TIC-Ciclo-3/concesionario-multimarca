@@ -5,13 +5,25 @@ import { Dialog, Tooltip } from '@material-ui/core';
 import { obtenerVehiculos } from 'utils/api';
 import 'react-toastify/dist/ReactToastify.css';
 import { crearVehiculos } from 'utils/api';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const Vehiculos = () => {
+  const { getAccessTokenSilently } = useAuth0();
   const [mostrarTabla, setMostrarTabla] = useState(true);
   const [vehiculos, setVehiculos] = useState([]);
   const [textoBoton, setTextoBoton] = useState('Crear Nuevo Vehículo');
   const [colorBoton, setColorBoton] = useState('indigo');
   const [ejecutarConsulta, setEjecutarConsulta] = useState(true);
+
+  useEffect(() => {
+    const gat = async () => {
+      const accessToken = await getAccessTokenSilently({
+        audience: `autenticacion-test-misiontic`,
+      });
+      console.log('access token', accessToken);
+    };
+    gat();
+  }, [getAccessTokenSilently]);
 
   useEffect(() => {
     console.log('consulta', ejecutarConsulta);
@@ -21,7 +33,7 @@ const Vehiculos = () => {
           setVehiculos(response.data);
         },
         (err) => {
-          console.err(err);
+          console.error(err);
         }
       );
       setEjecutarConsulta(false);

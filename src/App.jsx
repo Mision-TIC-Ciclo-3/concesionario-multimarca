@@ -25,6 +25,7 @@ function App() {
         domain='test-misiontic.us.auth0.com'
         clientId='TNZt6AQEKyfQH5XOyAXnd5rAaDgwJJiu'
         redirectUri='http://localhost:3000/admin/'
+        audience='autenticacion-test-misiontic'
       >
         <DarkModeContext.Provider value={{ darkMode, setDarkMode }}>
           <Router>
