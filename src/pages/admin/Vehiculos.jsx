@@ -3,6 +3,7 @@ import { ToastContainer, toast } from 'react-toastify';
 import { nanoid } from 'nanoid';
 import { Dialog, Tooltip } from '@material-ui/core';
 import { obtenerVehiculos, crearVehiculo, editarVehiculo, eliminarVehiculo } from 'utils/api';
+import ReactLoading from 'react-loading';
 import 'react-toastify/dist/ReactToastify.css';
 
 const Vehiculos = () => {
@@ -11,20 +12,27 @@ const Vehiculos = () => {
   const [textoBoton, setTextoBoton] = useState('Crear Nuevo Vehículo');
   const [colorBoton, setColorBoton] = useState('indigo');
   const [ejecutarConsulta, setEjecutarConsulta] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log('consulta', ejecutarConsulta);
-    if (ejecutarConsulta) {
-      obtenerVehiculos(
+    const fetchVehiculos = async () => {
+      setLoading(true);
+      await obtenerVehiculos(
         (response) => {
           console.log('la respuesta que se recibio fue', response);
           setVehiculos(response.data);
           setEjecutarConsulta(false);
+          setLoading(false);
         },
         (error) => {
           console.error('Salio un error:', error);
+          setLoading(false);
         }
       );
+    };
+    console.log('consulta', ejecutarConsulta);
+    if (ejecutarConsulta) {
+      fetchVehiculos();
     }
   }, [ejecutarConsulta]);
 
@@ -59,8 +67,13 @@ const Vehiculos = () => {
           {textoBoton}
         </button>
       </div>
+
       {mostrarTabla ? (
-        <TablaVehiculos listaVehiculos={vehiculos} setEjecutarConsulta={setEjecutarConsulta} />
+        <TablaVehiculos
+          loading={loading}
+          listaVehiculos={vehiculos}
+          setEjecutarConsulta={setEjecutarConsulta}
+        />
       ) : (
         <FormularioCreacionVehiculos
           setMostrarTabla={setMostrarTabla}
@@ -73,7 +86,7 @@ const Vehiculos = () => {
   );
 };
 
-const TablaVehiculos = ({ listaVehiculos, setEjecutarConsulta }) => {
+const TablaVehiculos = ({ loading, listaVehiculos, setEjecutarConsulta }) => {
   const [busqueda, setBusqueda] = useState('');
   const [vehiculosFiltrados, setVehiculosFiltrados] = useState(listaVehiculos);
 
@@ -95,28 +108,32 @@ const TablaVehiculos = ({ listaVehiculos, setEjecutarConsulta }) => {
       />
       <h2 className='text-2xl font-extrabold text-gray-800'>Todos los vehículos</h2>
       <div className='hidden md:flex w-full'>
-        <table className='tabla'>
-          <thead>
-            <tr>
-              <th>Id</th>
-              <th>Nombre del vehículo</th>
-              <th>Marca del vehículo</th>
-              <th>Modelo del vehículo</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {vehiculosFiltrados.map((vehiculo) => {
-              return (
-                <FilaVehiculo
-                  key={nanoid()}
-                  vehiculo={vehiculo}
-                  setEjecutarConsulta={setEjecutarConsulta}
-                />
-              );
-            })}
-          </tbody>
-        </table>
+        {loading ? (
+          <ReactLoading type='cylon' color='#abc123' height={667} width={375} />
+        ) : (
+          <table className='tabla'>
+            <thead>
+              <tr>
+                <th>Id</th>
+                <th>Nombre del vehículo</th>
+                <th>Marca del vehículo</th>
+                <th>Modelo del vehículo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {vehiculosFiltrados.map((vehiculo) => {
+                return (
+                  <FilaVehiculo
+                    key={nanoid()}
+                    vehiculo={vehiculo}
+                    setEjecutarConsulta={setEjecutarConsulta}
+                  />
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </div>
       <div className='flex flex-col w-full m-2 md:hidden'>
         {vehiculosFiltrados.map((el) => {
