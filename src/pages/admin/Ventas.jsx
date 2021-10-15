@@ -59,13 +59,6 @@ const Ventas = () => {
 
     console.log('lista antes de cantidad', listaVehiculos);
 
-    Object.keys(formData).forEach((k) => {
-      if (k.includes('cantidad')) {
-        const indice = parseInt(k.split('_')[1]);
-        listaVehiculos[indice]['cantidad'] = formData[k];
-      }
-    });
-
     console.log('lista despues de cantidad', listaVehiculos);
 
     const datosVenta = {
@@ -98,7 +91,7 @@ const Ventas = () => {
               Seleccione un Vendedor
             </option>
             {vendedores.map((el) => {
-              return <option key={nanoid()} value={el._id}>{`${el.name} ${el.lastname}`}</option>;
+              return <option key={nanoid()} value={el._id}>{`${el.email}`}</option>;
             })}
           </select>
         </label>
@@ -153,6 +146,15 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
     setVehiculos([...vehiculos, vehiculoAEliminar]);
   };
 
+  const modificarVehiculo = (vehiculo, cantidad) => {
+    const vehModificado = filasTabla.filter((v) => v._id === vehiculo._id)[0];
+    vehModificado.cantidad = cantidad;
+    let ft = [...filasTabla];
+    ft = ft.filter((v) => v._id !== vehiculo._id);
+    ft = [...ft, vehModificado];
+    setFilasTabla(ft);
+  };
+
   return (
     <div>
       <div className='flex '>
@@ -200,29 +202,48 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
         <tbody>
           {filasTabla.map((el, index) => {
             return (
-              <tr key={nanoid()}>
-                <td>{el._id}</td>
-                <td>{el.name}</td>
-                <td>{el.brand}</td>
-                <td>{el.model}</td>
-                <td>
-                  <label htmlFor={`valor_${index}`}>
-                    <input type='number' name={`cantidad_${index}`} />
-                  </label>
-                </td>
-                <td>
-                  <i
-                    onClick={() => eliminarVehiculo(el)}
-                    className='fas fa-minus text-red-500 cursor-pointer'
-                  />
-                </td>
-                <input hidden defaultValue={el._id} name={`vehiculo_${index}`} />
-              </tr>
+              <FilaVehiculo
+                key={nanoid()}
+                vehiculo={el}
+                index={index}
+                eliminarVehiculo={eliminarVehiculo}
+                modificarVehiculo={modificarVehiculo}
+              />
             );
           })}
         </tbody>
       </table>
     </div>
+  );
+};
+
+const FilaVehiculo = ({ vehiculo, index, eliminarVehiculo, modificarVehiculo }) => {
+  return (
+    <tr>
+      <td>{vehiculo._id}</td>
+      <td>{vehiculo.name}</td>
+      <td>{vehiculo.brand}</td>
+      <td>{vehiculo.model}</td>
+      <td>
+        <label htmlFor={`valor_${index}`}>
+          <input
+            type='number'
+            name={`cantidad_${index}`}
+            value={vehiculo.cantidad}
+            onBlur={(e) => modificarVehiculo(vehiculo, e.target.value)}
+          />
+        </label>
+      </td>
+      <td>
+        <i
+          onClick={() => eliminarVehiculo(vehiculo)}
+          className='fas fa-minus text-red-500 cursor-pointer'
+        />
+      </td>
+      <td>
+        <input hidden defaultValue={vehiculo._id} name={`vehiculo_${index}`} />
+      </td>
+    </tr>
   );
 };
 
