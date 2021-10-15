@@ -54,22 +54,31 @@ import { obtenerUsuarios } from 'utils/api';
 //   return (
 //     <table>
 //       {vehiculos.map((v, index) => {
-//         return (
-//           <tr key={index}>
-//             <td>{v.name}</td>
-//             <td>
-//               <input
-//                 name={`cantidad_${index}`}
-//                 value={v.cantidad}
-//                 onChange={(e) => {
-//                   modifyVeh(v, e.target.value);
-//                 }}
-//               />
-//             </td>
-//           </tr>
-//         );
+//         return <Vehiculo key={index} v={v} index={index} modifyVeh={modifyVeh} />;
 //       })}
 //     </table>
+//   );
+// };
+
+// const Vehiculo = ({ v, index, modifyVeh }) => {
+//   const [vehi, setVehi] = useState(v);
+//   useEffect(() => {
+//     console.log('v', vehi);
+//   }, [vehi]);
+//   return (
+//     <tr>
+//       <td>{vehi.name}</td>
+//       <td>
+//         <input
+//           name={`cantidad_${index}`}
+//           value={vehi.cantidad}
+//           onChange={(e) => {
+//             modifyVeh(vehi, e.target.value);
+//             setVehi({ ...vehi, cantidad: e.target.value });
+//           }}
+//         />
+//       </td>
+//     </tr>
 //   );
 // };
 
@@ -83,7 +92,6 @@ const Ventas = () => {
     const fetchVendores = async () => {
       await obtenerUsuarios(
         (response) => {
-          console.log('respuesta de usuarios', response);
           setVendedores(response.data);
         },
         (error) => {
@@ -126,17 +134,11 @@ const Ventas = () => {
       })
       .filter((v) => v);
 
-    console.log('lista antes de cantidad', listaVehiculos);
-
-    console.log('lista despues de cantidad', listaVehiculos);
-
     const datosVenta = {
       vendedor: vendedores.filter((v) => v._id === formData.vendedor)[0],
       cantidad: formData.valor,
       vehiculos: listaVehiculos,
     };
-
-    console.log('lista vehiculos', listaVehiculos);
 
     await crearVenta(
       datosVenta,
@@ -196,11 +198,6 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
   const [filasTabla, setFilasTabla] = useState([]);
 
   useEffect(() => {
-    console.log(vehiculoAAgregar);
-  }, [vehiculoAAgregar]);
-
-  useEffect(() => {
-    console.log('filasTabla', filasTabla);
     setVehiculosTabla(filasTabla);
   }, [filasTabla, setVehiculosTabla]);
 
@@ -220,6 +217,7 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
       filasTabla.map((ft) => {
         if (ft._id === vehiculo.id) {
           ft.cantidad = cantidad;
+          ft.total = vehiculo.valor * cantidad;
         }
         return ft;
       })
@@ -266,6 +264,8 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
             <th>Marca</th>
             <th>Modelo</th>
             <th>Cantidad</th>
+            <th>Valor Unitario</th>
+            <th>Total</th>
             <th>Eliminar</th>
             <th className='hidden'>Input</th>
           </tr>
@@ -275,7 +275,7 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
             return (
               <FilaVehiculo
                 key={el._id}
-                vehiculo={el}
+                veh={el}
                 index={index}
                 eliminarVehiculo={eliminarVehiculo}
                 modificarVehiculo={modificarVehiculo}
@@ -288,7 +288,11 @@ const TablaVehiculos = ({ vehiculos, setVehiculos, setVehiculosTabla }) => {
   );
 };
 
-const FilaVehiculo = ({ vehiculo, index, eliminarVehiculo, modificarVehiculo }) => {
+const FilaVehiculo = ({ veh, index, eliminarVehiculo, modificarVehiculo }) => {
+  const [vehiculo, setVehiculo] = useState(veh);
+  useEffect(() => {
+    console.log('veh', vehiculo);
+  }, [vehiculo]);
   return (
     <tr>
       <td>{vehiculo._id}</td>
@@ -301,17 +305,28 @@ const FilaVehiculo = ({ vehiculo, index, eliminarVehiculo, modificarVehiculo }) 
             type='number'
             name={`cantidad_${index}`}
             value={vehiculo.cantidad}
-            onChange={(e) => modificarVehiculo(vehiculo, e.target.value)}
+            onChange={(e) => {
+              modificarVehiculo(vehiculo, e.target.value === '' ? '0' : e.target.value);
+              setVehiculo({
+                ...vehiculo,
+                cantidad: e.target.value === '' ? '0' : e.target.value,
+                total:
+                  parseFloat(vehiculo.valor) *
+                  parseFloat(e.target.value === '' ? '0' : e.target.value),
+              });
+            }}
           />
         </label>
       </td>
+      <td>{vehiculo.valor}</td>
+      <td>{parseFloat(vehiculo.total ?? 0)}</td>
       <td>
         <i
           onClick={() => eliminarVehiculo(vehiculo)}
           className='fas fa-minus text-red-500 cursor-pointer'
         />
       </td>
-      <td>
+      <td className='hidden'>
         <input hidden defaultValue={vehiculo._id} name={`vehiculo_${index}`} />
       </td>
     </tr>
