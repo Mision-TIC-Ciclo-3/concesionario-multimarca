@@ -9,7 +9,7 @@ const Sidebar = () => {
   const { user, logout } = useAuth0();
 
   const cerrarSesion = () => {
-    logout({ returnTo: 'http://localhost:3000/admin' });
+    logout({ returnTo: 'https://enigmatic-shelf-42481.herokuapp.com/admin' });
     localStorage.setItem('token', null);
   };
 
