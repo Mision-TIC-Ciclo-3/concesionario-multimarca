@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import ImagenLogo from './ImagenLogo';
 import { Link } from 'react-router-dom';
 import useActiveRoute from 'hooks/useActiveRoute';
@@ -48,7 +48,7 @@ const Ruta = ({ icono, ruta, nombre, usuario }) => {
       >
         {usuario ? (
           <>
-            <img src={usuario.picture} className='h-5 w-5 rounded-full' />
+            <img src={usuario.picture} alt='usuario' className='h-5 w-5 rounded-full' />
             {usuario.name}
           </>
         ) : (

@@ -45,6 +45,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^9",
+    "craco-alias": "^3.0.1",
     "postcss": "^7",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat"
   }
